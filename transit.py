@@ -10,7 +10,7 @@ actions = [
     # server
     'passive_open/x', 'rcv_SYN/send_SYN,ACK', 'close/snd_FIN',
     # purple
-    'send/send_SYN', 'close/x',
+    'send/send_SYN', #'close/x',
          ]
 # trigger is the action, source is the state s, dest is the next state s'
 # actions are in the format event/response
@@ -31,7 +31,7 @@ transitions= [
     {'trigger' : actions[3], 'source' : 'last_ACK', 'dest' : 'closed'},
     # purple arrows
     {'trigger' : actions[9], 'source' : 'listen', 'dest' : 'SYN_sent'},
-    {'trigger' : actions[10], 'source' : 'SYN_sent', 'dest' : 'closed'},
+    #{'trigger' : actions[10], 'source' : 'SYN_sent', 'dest' : 'closed'},
     {'trigger' : actions[7], 'source' : 'SYN_sent', 'dest' : 'SYN_rcvd'},
     {'trigger' : actions[8], 'source' : 'SYN_rcvd', 'dest' : 'FIN_wait_1'},
     {'trigger' : actions[4], 'source' : 'FIN_wait_1', 'dest' : 'closing'},
@@ -96,8 +96,8 @@ import random
 # we need to build the environment. How?
 
 # Defining the different parameters
-epsilon = 0.9 # exploration
-total_episodes = 1000
+epsilon = 0.5 # exploration
+total_episodes = 10000
 max_steps = 100
 alpha = 0.85
 gamma = 0.95
@@ -136,30 +136,31 @@ for episode in range(total_episodes):
     t = 0
     state1 = states.index(conn.state)
     action1 = choose_action(state1)
-    reward = 0 # necessario?
     done = False
-
+    print("Episode", episode)
     while t < max_steps:
         #Getting the next state
 
         conn.trigger(actions[action1])
         state2 = states.index(conn.state)
-        print("DEBUG state1: ", state1, " state2: ", state2)
+        #print("DEBUG state1: ", state1, " state2: ", state2)
         tmp_reward = -1
+        if state1 != 0 and state2 == 0:
+            done = True
 
-        if state1 == 8 and state2 == 9:
-            print("SONO QUI2")
+        if state1 == 8 and state2 == 0: # check state values
+            print("Reward 1000")
             # if i am at the end passing through time_wait (there should be a better implementation for the reward function)
             tmp_reward = 1000
             done = True
-        if state2 == 4:
-            print("SONO QUI")
+        if state1 != 4 and state2 == 4:
+            print("Reward 10")
             tmp_reward = 10
 
         #Choosing the next action
         action2 = choose_action(state2)
 
-        print("DEBUG action1: ", action1, " action2: ", action2)
+        #print("DEBUG action1: ", action1, " action2: ", action2)
 
         #Learning the Q-value
         update(state1, state2, tmp_reward, action1, action2)
@@ -169,11 +170,12 @@ for episode in range(total_episodes):
 
         #Updating the respective vaLues
         t += 1
-        reward = reward + tmp_reward # i don't add reward except from the final step
-        print("DEBUG reward at iteration ", t, " is of R = ", reward)
+        reward = reward + tmp_reward
+        #print("DEBUG reward at iteration ", t, " is of R = ", tmp_reward)
 
         #If at the end of learning process
         if done:
+            print("Done time", t)
             break
 
 #Evaluating the performance
@@ -183,21 +185,25 @@ print ("Performance : ", reward/total_episodes)
 print(Q)
 # how to visualise the final path?
 
+
 conn.to_closed()
 print("Restarting... returning to state: " + conn.state)
 t = 0
+max_steps = 30
 tot_reward = 0
 while t < max_steps:
     state = states.index(conn.state)
-    print("DEBUG st value is ", state)
+    print("State", state)
     max_action = np.argmax(Q[state, :])
-    print("Action to perform is " + actions[max_action])
+    print("Action", actions[max_action])
     previous_state = conn.state
     conn.trigger(actions[max_action])
     tot_reward += Q[state, max_action]
-    print("Now I am in state " + conn.state)
+    print("New state", conn.state)
     if previous_state == 'time_wait' and conn.state == 'closed':
         break
     t += 1
 
 print("End with total reward ", tot_reward)
+
+print("Fine")
