@@ -57,8 +57,6 @@ import time
 import matplotlib.pyplot as plt
 
 
-# we need to build the environment. How?
-
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
 total_episodes = 1000
@@ -99,8 +97,6 @@ def update(state, state2, reward, action, action2):
             E[s,a] = gamma * lam * E[s,a]
 
 # Training the learning agent
-# Initializing the reward
-#reward=0
 
 start_time = time.time()
 
@@ -108,7 +104,7 @@ x = range(0, total_episodes)
 y_timesteps = []
 y_reward = []
 
-# Starting the SARSA learning
+# Starting the SARSA(lambda) learning
 for episode in range(total_episodes):
     print("Episode", episode)
     t = 0
@@ -150,7 +146,6 @@ for episode in range(total_episodes):
         t += 1
         reward_per_episode += tmp_reward
 
-
         #If at the end of learning process
         if done:
             break
@@ -160,6 +155,7 @@ for episode in range(total_episodes):
 
 
 #Visualizing the Q-matrix
+print(actions)
 print(Q)
 
 

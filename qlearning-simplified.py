@@ -1,5 +1,3 @@
-#Luca Version
-
 class Connection(object):
     pass
 
@@ -52,13 +50,12 @@ machine = Machine(model=conn, states=states, transitions=transitions, initial='s
 
 ###
 
-# SARSA algorithm
+# Q-learning algorithm
 import time
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 
-# we need to build the environment. How?
 
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
@@ -78,16 +75,15 @@ def choose_action(state):
     if np.random.uniform(0, 1) < epsilon:
         action = random.randint(0,len(actions)-1)
     else:
-        #actions2 = np.argmax(Q[state, :]) #they might be more than one
-        #action = actions2[random.randint(0,len(actions2)-1)]
         #choose random action between the max ones
         action=np.random.choice(np.where(Q[state, :] == Q[state, :].max())[0])
     return action
 
 # Function to learn the Q-value
-def update(state, state2, reward, action, action2):
+def update(state, state2, reward, action):
     predict = Q[state, action]
-    target = reward + gamma * Q[state2, action2]
+    maxQ = np.amax(Q[state2, :]) #find maximum value for the new state
+    target = reward + gamma * maxQ
     Q[state, action] = Q[state, action] + alpha * (target - predict)
 
 # Training the learning agent
@@ -104,13 +100,13 @@ for episode in range(total_episodes):
     t = 0
     conn.state = 'start'
     state1 = states.index(conn.state)
-    action1 = choose_action(state1)
     done = False
     reward_per_episode = 0
 
     while t < max_steps:
         #Getting the next state
 
+        action1 = choose_action(state1)
         conn.trigger(actions[action1])
         state2 = states.index(conn.state)
         #print("From state", state1, "to state", state2)
@@ -124,16 +120,12 @@ for episode in range(total_episodes):
             #print("Connection estabilished")
             tmp_reward = 10
 
-        #Choosing the next action
-        action2 = choose_action(state2)
-
         #print("Action1:", action1, ". Action2:", action2)
 
         #Learning the Q-value
-        update(state1, state2, tmp_reward, action1, action2)
+        update(state1, state2, tmp_reward, action1)
 
         state1 = state2
-        action1 = action2
 
         #Updating the respective vaLues
         t += 1
