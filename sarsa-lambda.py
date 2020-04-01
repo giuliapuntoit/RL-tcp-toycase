@@ -59,8 +59,8 @@ import matplotlib.pyplot as plt
 
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
-total_episodes = 1000
-max_steps = 10000
+total_episodes = 5000
+max_steps = 1000
 alpha = 0.005 # smaller than before
 gamma = 0.95
 # new paramter lambda for sarsa(lambda)
@@ -192,3 +192,5 @@ while t < 10:
 
 print("--- %s seconds ---" % (time.time() - start_time))
 print("End")
+
+# time: 37.28934907913208 seconds
