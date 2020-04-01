@@ -26,7 +26,7 @@ transitions= [
     {'trigger' : actions[4], 'source' : 'FIN_wait_2', 'dest' : 'time_wait'},
     {'trigger' : actions[5], 'source' : 'time_wait', 'dest' : 'closed'},
     # server transactions, red arrows
-#    {'trigger' : actions[6], 'source' : 'closed', 'dest' : 'listen'},
+#    {'trigger' : actions[6], 'source' : 'start', 'dest' : 'listen'},
 #    {'trigger' : actions[7], 'source' : 'listen', 'dest' : 'SYN_rcvd'},
 #    {'trigger' : actions[3], 'source' : 'SYN_rcvd', 'dest' : 'established'},
 #    {'trigger' : actions[4], 'source' : 'established', 'dest' : 'close_wait'},
@@ -178,4 +178,4 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 print("End")
 
-# time: 29.440141916275024 seconds
+# time for 5000 episodes: 29.440141916275024 seconds

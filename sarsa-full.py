@@ -7,15 +7,16 @@ class Connection(object):
 conn = Connection()
 
 #states = ['closed', 'listen', 'SYN_rcvd', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'closing', 'time_wait', 'close_wait', 'last_ACK']
-states = ['start', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'time_wait','closed']
+#states = ['start', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'time_wait','closed']
+states = ['start', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'time_wait','closed', 'listen', 'SYN_rcvd', 'closing', 'close_wait', 'last_ACK']
 
 actions = [
     # client
     'active_open/send_SYN', 'rcv_SYN,ACK/snd_ACK', 'close/snd_FIN', 'rcv_ACK/x', 'rcv_FIN/snd_ACK', 'timeout=2MSL/x',
     # server
-#    'passive_open/x', 'rcv_SYN/send_SYN,ACK', 'close/snd_FIN',
+    'passive_open/x', 'rcv_SYN/send_SYN,ACK', 'close/snd_FIN',
     # purple
-#    'send/send_SYN', 'close/x',
+    'send/send_SYN', 'close/x',
          ]
 # trigger is the action, source is the state s, dest is the next state s'
 # actions are in the format event/response
@@ -28,19 +29,19 @@ transitions= [
     {'trigger' : actions[4], 'source' : 'FIN_wait_2', 'dest' : 'time_wait'},
     {'trigger' : actions[5], 'source' : 'time_wait', 'dest' : 'closed'},
     # server transactions, red arrows
-#    {'trigger' : actions[6], 'source' : 'start', 'dest' : 'listen'},
-#    {'trigger' : actions[7], 'source' : 'listen', 'dest' : 'SYN_rcvd'},
-#    {'trigger' : actions[3], 'source' : 'SYN_rcvd', 'dest' : 'established'},
-#    {'trigger' : actions[4], 'source' : 'established', 'dest' : 'close_wait'},
-#    {'trigger' : actions[8], 'source' : 'close_wait', 'dest' : 'last_ACK'},
-#    {'trigger' : actions[3], 'source' : 'last_ACK', 'dest' : 'closed'},
+    {'trigger' : actions[6], 'source' : 'start', 'dest' : 'listen'},
+    {'trigger' : actions[7], 'source' : 'listen', 'dest' : 'SYN_rcvd'},
+    {'trigger' : actions[3], 'source' : 'SYN_rcvd', 'dest' : 'established'},
+    {'trigger' : actions[4], 'source' : 'established', 'dest' : 'close_wait'},
+    {'trigger' : actions[8], 'source' : 'close_wait', 'dest' : 'last_ACK'},
+    {'trigger' : actions[3], 'source' : 'last_ACK', 'dest' : 'closed'},
     # purple arrows
-#    {'trigger' : actions[9], 'source' : 'listen', 'dest' : 'SYN_sent'},
-#    {'trigger' : actions[10], 'source' : 'SYN_sent', 'dest' : 'closed'},
-#    {'trigger' : actions[7], 'source' : 'SYN_sent', 'dest' : 'SYN_rcvd'},
-#    {'trigger' : actions[8], 'source' : 'SYN_rcvd', 'dest' : 'FIN_wait_1'},
-#    {'trigger' : actions[4], 'source' : 'FIN_wait_1', 'dest' : 'closing'},
-#    {'trigger' : actions[3], 'source' : 'closing', 'dest' : 'time_wait'}
+    {'trigger' : actions[9], 'source' : 'listen', 'dest' : 'SYN_sent'},
+    {'trigger' : actions[10], 'source' : 'SYN_sent', 'dest' : 'closed'},
+    {'trigger' : actions[7], 'source' : 'SYN_sent', 'dest' : 'SYN_rcvd'},
+    {'trigger' : actions[8], 'source' : 'SYN_rcvd', 'dest' : 'FIN_wait_1'},
+    {'trigger' : actions[4], 'source' : 'FIN_wait_1', 'dest' : 'closing'},
+    {'trigger' : actions[3], 'source' : 'closing', 'dest' : 'time_wait'}
 ]
 
 # from transitions import Machine
@@ -186,6 +187,4 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 print("End")
 
-# time: 33.26393699645996 seconds
-
-# Potrei iniziare a dividere client e server oppure ad aggiungere tutti gli altri stati/tutte le altre azioni
+# time for 5000 episodes: 62.87018013000488 seconds

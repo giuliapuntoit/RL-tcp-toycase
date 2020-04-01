@@ -26,7 +26,7 @@ transitions= [
     {'trigger' : actions[4], 'source' : 'FIN_wait_2', 'dest' : 'time_wait'},
     {'trigger' : actions[5], 'source' : 'time_wait', 'dest' : 'closed'},
     # server transactions, red arrows
-#    {'trigger' : actions[6], 'source' : 'closed', 'dest' : 'listen'},
+#    {'trigger' : actions[6], 'source' : 'start', 'dest' : 'listen'},
 #    {'trigger' : actions[7], 'source' : 'listen', 'dest' : 'SYN_rcvd'},
 #    {'trigger' : actions[3], 'source' : 'SYN_rcvd', 'dest' : 'established'},
 #    {'trigger' : actions[4], 'source' : 'established', 'dest' : 'close_wait'},
@@ -59,7 +59,7 @@ import matplotlib.pyplot as plt
 
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
-total_episodes = 5000
+total_episodes = 3000
 max_steps = 1000
 alpha = 0.005 # smaller than before
 gamma = 0.95
