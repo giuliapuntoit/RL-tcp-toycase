@@ -59,7 +59,7 @@ import matplotlib.pyplot as plt
 
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
-total_episodes = 3000
+total_episodes = 5000
 max_steps = 1000
 alpha = 0.005 # smaller than before
 gamma = 0.95
@@ -158,6 +158,7 @@ for episode in range(total_episodes):
 print(actions)
 print(Q)
 
+print("--- %s seconds ---" % (time.time() - start_time))
 
 plt.plot(x, y_reward)
 plt.xlabel('Episodes')
@@ -190,7 +191,6 @@ while t < 10:
         break
     t += 1
 
-print("--- %s seconds ---" % (time.time() - start_time))
 print("End")
 
-# time: 37.28934907913208 seconds
+# time: 22.515238761901855 seconds

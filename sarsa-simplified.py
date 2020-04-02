@@ -58,8 +58,6 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
-# we need to build the environment. How?
-
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
 total_episodes = 5000
@@ -97,6 +95,9 @@ start_time = time.time()
 x = range(0, total_episodes)
 y_timesteps = []
 y_reward = []
+y_cum_reward = []
+
+cumulative_reward = 0
 
 # Starting the SARSA learning
 for episode in range(total_episodes):
@@ -142,7 +143,9 @@ for episode in range(total_episodes):
         #If at the end of learning process
         if done:
             break
+    cumulative_reward += reward_per_episode
     y_timesteps.append(t-1)
+    y_cum_reward.append(cumulative_reward)
     y_reward.append(reward_per_episode)
 
 
@@ -150,10 +153,20 @@ for episode in range(total_episodes):
 print(actions)
 print(Q)
 
+print("--- %s seconds ---" % (time.time() - start_time))
+
+
 plt.plot(x, y_reward)
 plt.xlabel('Episodes')
 plt.ylabel('Reward')
-plt.title('Rewards per episode')
+plt.title('Reward per episodes')
+
+plt.show()
+
+plt.plot(x, y_cum_reward)
+plt.xlabel('Episodes')
+plt.ylabel('Cumulative reward')
+plt.title('Cumulative reward over episodes')
 
 plt.show()
 
@@ -163,7 +176,6 @@ plt.ylabel('Timestep to end of the episode')
 plt.title('Timesteps per episode')
 
 plt.show()
-
 
 #conn.to_closed()
 conn.state = 'start'
@@ -182,10 +194,9 @@ while t < 10:
         break
     t += 1
 
-print("--- %s seconds ---" % (time.time() - start_time))
 
 print("End")
 
-# time: 33.26393699645996 seconds
+# time: 17.131273984909058 seconds
 
-# Potrei iniziare a dividere client e server oppure ad aggiungere tutti gli altri stati/tutte le altre azioni
+# Potrei iniziare a dividere client e server

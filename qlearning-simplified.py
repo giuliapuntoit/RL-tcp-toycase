@@ -142,6 +142,8 @@ for episode in range(total_episodes):
 print(actions)
 print(Q)
 
+print("--- %s seconds ---" % (time.time() - start_time))
+
 plt.plot(x, y_reward)
 plt.xlabel('Episodes')
 plt.ylabel('Reward')
@@ -174,8 +176,6 @@ while t < 10:
         break
     t += 1
 
-print("--- %s seconds ---" % (time.time() - start_time))
-
 print("End")
 
-# time for 5000 episodes: 29.440141916275024 seconds
+# time for 5000 episodes: 19.203142166137695 seconds
