@@ -1,6 +1,6 @@
 # simple_device.py
 
-from my_states import LockedState
+from prove.my_states import LockedState
 # https://dev.to/karn/building-a-simple-state-machine-in-python
 class SimpleDevice(object):
     """
