@@ -152,6 +152,7 @@ class QlearningSimplified(object):
             state = states.index(conn.state)
             #print("[DEBUG] state:", state)
             max_action = np.argmax(Q[state, :])
+            finalPolicy.append(max_action)
             if self.disable_graphs == False:
                 print("Action to perform is", actions[max_action])
             previous_state = conn.state
@@ -183,7 +184,7 @@ class QlearningSimplified(object):
             return False, finalReward
 
 if __name__ == '__main__':
-    optimalPolicy, obtainedReward = QlearningSimplified(total_episodes=20).run()
+    optimalPolicy, obtainedReward = QlearningSimplified(total_episodes=200).run()
     if optimalPolicy:
         print("Optimal policy was found with reward", obtainedReward)
     else:
