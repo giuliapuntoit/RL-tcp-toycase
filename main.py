@@ -9,24 +9,35 @@
 '''
 
 from sarsa_simplified_class import SarsaSimplified
+from sarsa_lambda_simplified_class import SarsaLambdaSimplified
 import matplotlib.pyplot as plt
 
-num_episodes = 10
+num_episodes = 1000
 x = []
-y_rewards = []
-y2_rewards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+y_sarsa_rewards = []
+y_sarsa_lambda_rewards = []
+dis = True
 
 for n in range(num_episodes):
     x.append(n)
-    optimalPolicy, obtainedReward = SarsaSimplified(total_episodes=n, disable_graphs=True).run()
-    if optimalPolicy:
-        print("Optimal policy was found with reward", obtainedReward)
-    else:
-        print("No optimal policy reached with reward", obtainedReward)
-    y_rewards.append(obtainedReward)
+    optimalPolicy, obtainedReward = SarsaSimplified(total_episodes=n, disable_graphs=dis).run()
+    if dis == False:
+        if optimalPolicy:
+            print("[SARSA] Optimal policy was found with reward", obtainedReward)
+        else:
+            print("[SARSA] No optimal policy reached with reward", obtainedReward)
+    y_sarsa_rewards.append(obtainedReward)
 
-plt.plot(x, y_rewards, label="Sarsa Simplified")
-plt.plot(x, y2_rewards, label="Sarsa Full")
+    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=n, disable_graphs=dis).run()
+    if dis == False:
+        if optimalPolicy:
+            print("[SARSA(lambda)] Optimal policy was found with reward", obtainedReward)
+        else:
+            print("[SARSA(lambda)] No optimal policy reached with reward", obtainedReward)
+    y_sarsa_lambda_rewards.append(obtainedReward)
+
+plt.plot(x, y_sarsa_rewards, label="Sarsa Simplified")
+plt.plot(x, y_sarsa_lambda_rewards, label="Sarsa Lambda Simplified")
 plt.xlabel('Episodes')
 plt.ylabel('Final reward')
 plt.title('Final policy over number of episodes chosen.')
