@@ -7,12 +7,12 @@
 6. che quantifichi il quanto siamo vicini alla policy ottimale (come faccio?)
 7. che plotti con questi valori il numero di episodi per arrivare alla policy ottimale
 '''
-from qlearning_full_class import QlearningFull
-from qlearning_simplified_class import QlearningSimplified
-from sarsa_full_class import SarsaFull
-from sarsa_lambda_full_class import SarsaLambdaFull
-from sarsa_simplified_class import SarsaSimplified
-from sarsa_lambda_simplified_class import SarsaLambdaSimplified
+from integrated_version.qlearning_full_class import QlearningFull
+from integrated_version.qlearning_simplified_class import QlearningSimplified
+from integrated_version.sarsa_full_class import SarsaFull
+from integrated_version.sarsa_lambda_full_class import SarsaLambdaFull
+from integrated_version.sarsa_simplified_class import SarsaSimplified
+from integrated_version.sarsa_lambda_simplified_class import SarsaLambdaSimplified
 import matplotlib.pyplot as plt
 
 num_episodes = 200
