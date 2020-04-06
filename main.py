@@ -12,7 +12,7 @@ from sarsa_simplified_class import SarsaSimplified
 from sarsa_lambda_simplified_class import SarsaLambdaSimplified
 import matplotlib.pyplot as plt
 
-num_episodes = 40
+num_episodes = 200
 factor = 10
 x = []
 y_sarsa_rewards = []
@@ -22,35 +22,41 @@ y_qlearning_rewards = []
 dis = True
 
 print("SARSA")
-for n in range(num_episodes):
-    x.append(n*factor)
-    optimalPolicy, obtainedReward = SarsaSimplified(total_episodes=n*factor, disable_graphs=dis).run()
+n = 0
+while n < num_episodes:
+    x.append(n)
+    optimalPolicy, obtainedReward = SarsaSimplified(total_episodes=n, disable_graphs=dis).run()
     if dis == False:
         if optimalPolicy:
             print("[SARSA] Optimal policy was found with reward", obtainedReward)
         else:
             print("[SARSA] No optimal policy reached with reward", obtainedReward)
     y_sarsa_rewards.append(obtainedReward)
+    n += factor
 
 print("SARSA(lambda)")
-for n in range(num_episodes):
-    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=n*factor, disable_graphs=dis).run()
+n = 0
+while n < num_episodes:
+    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=n,lam=0.5, disable_graphs=dis).run()
     if dis == False:
         if optimalPolicy:
             print("[SARSA(lambda)] Optimal policy was found with reward", obtainedReward)
         else:
             print("[SARSA(lambda)] No optimal policy reached with reward", obtainedReward)
     y_sarsa_lambda_rewards.append(obtainedReward)
+    n += factor
 
 print("Q-learning")
-for n in range(num_episodes):
-    optimalPolicy, obtainedReward = QlearningSimplified(total_episodes=n*factor, disable_graphs=dis).run()
+n = 0
+while n < num_episodes:
+    optimalPolicy, obtainedReward = QlearningSimplified(total_episodes=n, disable_graphs=dis).run()
     if dis == False:
         if optimalPolicy:
             print("[Q-learning] Optimal policy was found with reward", obtainedReward)
         else:
             print("[Q-learning] No optimal policy reached with reward", obtainedReward)
     y_qlearning_rewards.append(obtainedReward)
+    n += factor
 
 print("End of episodes, showing graph...")
 plt.plot(x, y_sarsa_rewards, label="Sarsa")

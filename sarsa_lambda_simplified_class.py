@@ -195,7 +195,7 @@ class SarsaLambdaSimplified(object):
             return False, finalReward
 
 if __name__ == '__main__':
-    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=400).run()
+    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=100, lam=0.5).run()
     if optimalPolicy:
         print("Optimal policy was found with reward", obtainedReward)
     else:
