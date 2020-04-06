@@ -8,15 +8,15 @@ from transitions.extensions import GraphMachine as Machine
 class Connection(object):
     pass
 
-class SarsaLambdaSimplified(object):
+class SarsaLambdaFull(object):
     def __init__(self, epsilon=0.3, total_episodes=5000, max_steps=1000, alpha=0.005, gamma=0.95, lam = 0.9, disable_graphs=False):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
         self.max_steps = max_steps
         self.alpha = alpha
         self.gamma = gamma
-        self.disable_graphs = disable_graphs
         self.lam = lam
+        self.disable_graphs = disable_graphs
 
     # Function to choose the next action
     def choose_action(self, state, actions, Qmatrix):
@@ -24,8 +24,6 @@ class SarsaLambdaSimplified(object):
         if np.random.uniform(0, 1) < self.epsilon:
             action = random.randint(0,len(actions)-1)
         else:
-            #actions2 = np.argmax(Q[state, :]) #they might be more than one
-            #action = actions2[random.randint(0,len(actions2)-1)]
             #choose random action between the max ones
             action=np.random.choice(np.where(Qmatrix[state, :] == Qmatrix[state, :].max())[0])
         return action
@@ -35,7 +33,7 @@ class SarsaLambdaSimplified(object):
         predict = Qmatrix[state, action]
         target = reward + self.gamma * Qmatrix[state2, action2]
         delta = target - predict
-        Ematrix[state, action] = Ematrix[state, action] + 1 #perché +1?
+        Ematrix[state, action] = Ematrix[state, action] + 1
         # for all s, a
         for s in range(len(states)):
             for a in range(len(actions)):
@@ -45,12 +43,16 @@ class SarsaLambdaSimplified(object):
     def run(self):
         conn = Connection()
 
-        states = ['start', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'time_wait','closed']
+        states = ['start', 'SYN_sent', 'established', 'FIN_wait_1', 'FIN_wait_2', 'time_wait','closed', 'listen', 'SYN_rcvd', 'closing', 'close_wait', 'last_ACK']
 
         actions = [
             # client
             'active_open/send_SYN', 'rcv_SYN,ACK/snd_ACK', 'close/snd_FIN', 'rcv_ACK/x', 'rcv_FIN/snd_ACK', 'timeout=2MSL/x',
-        ]
+            # server
+            'passive_open/x', 'rcv_SYN/send_SYN,ACK', 'close/snd_FIN',
+            # purple
+            'send/send_SYN', 'close/x',
+                 ]
         # actions are in the format event/response
         transitions= [
             # client transactions, green arrows
@@ -60,8 +62,21 @@ class SarsaLambdaSimplified(object):
             {'trigger' : actions[3], 'source' : 'FIN_wait_1', 'dest' : 'FIN_wait_2'},
             {'trigger' : actions[4], 'source' : 'FIN_wait_2', 'dest' : 'time_wait'},
             {'trigger' : actions[5], 'source' : 'time_wait', 'dest' : 'closed'},
+            # server transactions, red arrows
+            {'trigger' : actions[6], 'source' : 'start', 'dest' : 'listen'},
+            {'trigger' : actions[7], 'source' : 'listen', 'dest' : 'SYN_rcvd'},
+            {'trigger' : actions[3], 'source' : 'SYN_rcvd', 'dest' : 'established'},
+            {'trigger' : actions[4], 'source' : 'established', 'dest' : 'close_wait'},
+            {'trigger' : actions[8], 'source' : 'close_wait', 'dest' : 'last_ACK'},
+            {'trigger' : actions[3], 'source' : 'last_ACK', 'dest' : 'closed'},
+            # purple arrows
+            {'trigger' : actions[9], 'source' : 'listen', 'dest' : 'SYN_sent'},
+            {'trigger' : actions[10], 'source' : 'SYN_sent', 'dest' : 'closed'},
+            {'trigger' : actions[7], 'source' : 'SYN_sent', 'dest' : 'SYN_rcvd'},
+            {'trigger' : actions[8], 'source' : 'SYN_rcvd', 'dest' : 'FIN_wait_1'},
+            {'trigger' : actions[4], 'source' : 'FIN_wait_1', 'dest' : 'closing'},
+            {'trigger' : actions[3], 'source' : 'closing', 'dest' : 'time_wait'}
         ]
-
 
         machine = Machine(model=conn, states=states, transitions=transitions, initial='start', ignore_invalid_triggers=True, auto_transitions=True, use_pygraphviz=True)
 
@@ -70,7 +85,6 @@ class SarsaLambdaSimplified(object):
         # SARSA(Lambda) algorithm
 
         # Initializing the Q-matrix
-
         if self.disable_graphs == False:
             print("N states: ", len(states))
             print("N actions: ", len(actions))
@@ -139,6 +153,7 @@ class SarsaLambdaSimplified(object):
 
             print("--- %s seconds ---" % (time.time() - start_time))
 
+
             plt.plot(x, y_reward)
             plt.xlabel('Episodes')
             plt.ylabel('Reward')
@@ -194,7 +209,7 @@ class SarsaLambdaSimplified(object):
             return False, finalReward
 
 if __name__ == '__main__':
-    optimalPolicy, obtainedReward = SarsaLambdaSimplified(total_episodes=100, lam=0.5).run()
+    optimalPolicy, obtainedReward = SarsaLambdaFull(total_episodes=1000, lam=0.5).run()
     if optimalPolicy:
         print("Optimal policy was found with reward", obtainedReward)
     else:
