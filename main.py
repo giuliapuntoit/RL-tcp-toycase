@@ -7,7 +7,10 @@
 6. che quantifichi il quanto siamo vicini alla policy ottimale (come faccio?)
 7. che plotti con questi valori il numero di episodi per arrivare alla policy ottimale
 '''
+from qlearning_full_class import QlearningFull
 from qlearning_simplified_class import QlearningSimplified
+from sarsa_full_class import SarsaFull
+from sarsa_lambda_full_class import SarsaLambdaFull
 from sarsa_simplified_class import SarsaSimplified
 from sarsa_lambda_simplified_class import SarsaLambdaSimplified
 import matplotlib.pyplot as plt
@@ -18,6 +21,9 @@ x = []
 y_sarsa_rewards = []
 y_sarsa_lambda_rewards = []
 y_qlearning_rewards = []
+y_sarsa_full_rewards = []
+y_sarsa_lambda_full_rewards = []
+y_qlearning_full_rewards = []
 
 dis = True
 
@@ -58,10 +64,49 @@ while n < num_episodes:
     y_qlearning_rewards.append(obtainedReward)
     n += factor
 
+print("SARSA FULL")
+n = 0
+while n < num_episodes:
+    optimalPolicy, obtainedReward = SarsaFull(total_episodes=n, disable_graphs=dis).run()
+    if dis == False:
+        if optimalPolicy:
+            print("[SARSA FULL] Optimal policy was found with reward", obtainedReward)
+        else:
+            print("[SARSA FULL] No optimal policy reached with reward", obtainedReward)
+    y_sarsa_full_rewards.append(obtainedReward)
+    n += factor
+
+print("SARSA(lambda) FULL")
+n = 0
+while n < num_episodes:
+    optimalPolicy, obtainedReward = SarsaLambdaFull(total_episodes=n,lam=0.5, disable_graphs=dis).run()
+    if dis == False:
+        if optimalPolicy:
+            print("[SARSA(lambda) FULL] Optimal policy was found with reward", obtainedReward)
+        else:
+            print("[SARSA(lambda) FULL] No optimal policy reached with reward", obtainedReward)
+    y_sarsa_lambda_full_rewards.append(obtainedReward)
+    n += factor
+
+print("Q-learning FULL")
+n = 0
+while n < num_episodes:
+    optimalPolicy, obtainedReward = QlearningFull(total_episodes=n, disable_graphs=dis).run()
+    if dis == False:
+        if optimalPolicy:
+            print("[Q-learning FULL] Optimal policy was found with reward", obtainedReward)
+        else:
+            print("[Q-learning FULL] No optimal policy reached with reward", obtainedReward)
+    y_qlearning_full_rewards.append(obtainedReward)
+    n += factor
+
 print("End of episodes, showing graph...")
 plt.plot(x, y_sarsa_rewards, label="Sarsa")
 plt.plot(x, y_sarsa_lambda_rewards, label="Sarsa Lambda")
 plt.plot(x, y_qlearning_rewards, label="Q-Learning")
+plt.plot(x, y_sarsa_full_rewards, label="Sarsa full")
+plt.plot(x, y_sarsa_lambda_full_rewards, label="Sarsa Lambda full")
+plt.plot(x, y_qlearning_full_rewards, label="Q-Learning full")
 plt.xlabel('Episodes')
 plt.ylabel('Final policy reward')
 plt.title('Simplified: Final policy over number of episodes chosen.')
