@@ -95,7 +95,7 @@ class QlearningFull(object):
         y_timesteps = []
         y_reward = []
 
-        # Starting the SARSA learning
+        # Starting the Q-learning learning
         for episode in range(self.total_episodes):
             if self.disable_graphs == False:
                 print("Episode", episode)
