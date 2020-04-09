@@ -215,7 +215,7 @@ class QlearningFull(object):
                 if state2 == 0: # o state 0?
                     #print("Connection closed correctly")
                     tmp_reward = 1000
-                if state1 != 5 and state2 == 6: # anche state1 == 5?
+                if state1 != 6 and state2 == 6: # anche state1 == 5?
                     #print("Connection estabilished")
                     tmp_reward = 10
                 if state2 == 0:
@@ -235,6 +235,47 @@ class QlearningFull(object):
                     break
             y_timesteps.append(t-1)
             y_reward.append(reward_per_episode)
+
+            if episode % 20 == 0:
+                conn.state = states[1]
+                if self.disable_graphs == False:
+                    print("Restarting... returning to state: " + conn.state)
+                t = 0
+                finPolicy = []
+                finReward = 0
+                while t < 10:
+                    state = states.index(conn.state)
+                    print("State", state)
+                    act = serv.server_action(state)
+                    print("Server does action", server_actions[act])
+                    conn.trigger(server_actions[act])
+                    state = states.index(conn.state)
+                    print("Goes to state", state)
+                    max_action = np.argmax(Q[state, :])
+                    finPolicy.append(max_action)
+                    if self.disable_graphs == False:
+                        print("Action to perform is", actions[max_action])
+                    previous_state = conn.state
+                    conn.trigger(actions[max_action])
+                    print("End in state", conn.state)
+                    state1 = states.index(previous_state)
+                    state2 = states.index(conn.state)
+                    tmp_reward = -1
+                    if state2 == 0:
+                        #print("Connection closed correctly")
+                        tmp_reward = 1000
+                    if state1 != 6 and state2 == 6:
+                        #print("Connection estabilished")
+                        tmp_reward = 10
+                    finReward += tmp_reward
+                    if self.disable_graphs == False:
+                        print("New state", conn.state)
+                    if conn.state == states[0]:
+                        break
+                    t += 1
+
+                x_global.append(episode)
+                y_global_reward.append(finReward)
 
         #Visualizing the Q-matrix
         if self.disable_graphs == False:
@@ -290,7 +331,7 @@ class QlearningFull(object):
             if state2 == 0: # o state 0?
                 #print("Connection closed correctly")
                 tmp_reward = 1000
-            if state1 != 5 and state2 == 6: # anche state1 == 5?
+            if state1 != 6 and state2 == 6: # anche state1 == 5?
                 #print("Connection estabilished")
                 tmp_reward = 10
             finalReward += tmp_reward
