@@ -92,13 +92,14 @@ class Server(object):
 class Connection(object):
     pass
 
-class SarsaFull(object):
-    def __init__(self, epsilon=0.3, total_episodes=5000, max_steps=1000, alpha=0.005, gamma=0.95, disable_graphs=False):
+class SarsaLambdaFull(object):
+    def __init__(self, epsilon=0.3, total_episodes=5000, max_steps=1000, alpha=0.005, gamma=0.95, lam = 0.9, disable_graphs=False):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
         self.max_steps = max_steps
         self.alpha = alpha
         self.gamma = gamma
+        self.lam = lam
         self.disable_graphs = disable_graphs
 
     # Function to choose the next action
@@ -111,11 +112,17 @@ class SarsaFull(object):
             action=np.random.choice(np.where(Qmatrix[state, :] == Qmatrix[state, :].max())[0])
         return action
 
-    # Function to learn the Q-value
-    def update(self, state, state2, reward, action, action2, Qmatrix):
+    # Function to update the Q-value matrix and the Eligibility matrix
+    def update(self, state, state2, reward, action, action2, states, actions, Qmatrix, Ematrix):
         predict = Qmatrix[state, action]
         target = reward + self.gamma * Qmatrix[state2, action2]
-        Qmatrix[state, action] = Qmatrix[state, action] + self.alpha * (target - predict)
+        delta = target - predict
+        Ematrix[state, action] = Ematrix[state, action] + 1
+        # for all s, a
+        for s in range(len(states)):
+            for a in range(len(actions)):
+                Qmatrix[s,a] = Qmatrix[s,a] + self.alpha * delta * Ematrix[s,a]
+                Ematrix[s,a] = self.gamma * self.lam * Ematrix[s,a]
 
     def run(self):
         conn = Connection()
@@ -158,15 +165,14 @@ class SarsaFull(object):
 
         machine.get_graph().draw('client_server_diagram.png', prog='dot')
 
-        # SARSA algorithm
+        # SARSA(lambda) algorithm
 
         # Initializing the Q-matrix
         if self.disable_graphs == False:
             print("N states: ", len(states))
             print("N actions: ", len(actions))
         Q = np.zeros((len(states), len(actions)))
-
-        # Training the learning agent
+        E = np.zeros((len(states), len(actions)))  # trace for state action pairs
 
         start_time = time.time()
 
@@ -179,7 +185,7 @@ class SarsaFull(object):
 
         serv = Server()
 
-        # Starting SARSA training
+        # Starting Q-learning training
         for episode in range(self.total_episodes):
             if self.disable_graphs == False:
                 print("Episode", episode)
@@ -221,7 +227,7 @@ class SarsaFull(object):
                 action2 = self.choose_action(state2, actions, Q)
 
                 #Learning the Q-value
-                self.update(state1, state2, tmp_reward, action1, action2, Q)
+                self.update(state1, state2, tmp_reward, action1, action2, states, actions, Q, E)
 
 
                 act = serv.server_action(state2)
@@ -358,7 +364,7 @@ class SarsaFull(object):
 
 
 if __name__ == '__main__':
-    x, y_reward = SarsaFull(total_episodes=20000, disable_graphs=False).run()
+    x, y_reward = SarsaLambdaFull(total_episodes=2000, lam=0.3, disable_graphs=False).run()
     print("End of episodes, showing graph...")
     plt.plot(x, y_reward, label="Sarsa full")
     plt.xlabel('Episodes')
