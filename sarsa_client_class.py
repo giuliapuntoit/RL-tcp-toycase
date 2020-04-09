@@ -92,7 +92,7 @@ class Server(object):
 class Connection(object):
     pass
 
-class QlearningFull(object):
+class SarsaFull(object):
     def __init__(self, epsilon=0.3, total_episodes=5000, max_steps=1000, alpha=0.005, gamma=0.95, disable_graphs=False):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
@@ -112,10 +112,9 @@ class QlearningFull(object):
         return action
 
     # Function to learn the Q-value
-    def update(self, state, state2, reward, action, Qmatrix):
+    def update(self, state, state2, reward, action, action2, Qmatrix):
         predict = Qmatrix[state, action]
-        maxQ = np.amax(Qmatrix[state2, :]) #find maximum value for the new state
-        target = reward + self.gamma * maxQ
+        target = reward + self.gamma * Qmatrix[state2, action2]
         Qmatrix[state, action] = Qmatrix[state, action] + self.alpha * (target - predict)
 
     def run(self):
@@ -192,27 +191,24 @@ class QlearningFull(object):
             done = False
             reward_per_episode = 0
 
+            act = serv.server_action(state1)
+            print("Server does action", server_actions[act])
+            conn.trigger(server_actions[act])
+
+            state1 = states.index(conn.state) # retrieve current state
+            print("Goes to state1", state1)
+
+            action1 = self.choose_action(state1, actions, Q)
+
             while t < self.max_steps:
-                act = serv.server_action(state1)
-                print("Server does action", server_actions[act])
-                conn.trigger(server_actions[act])
 
-                state1 = states.index(conn.state) # retrieve current state
-                print("Goes to state1", state1)
-
-                if state1 == 0:
-                    break
-
-                #Getting the next state
-
-                action1 = self.choose_action(state1, actions, Q)
                 conn.trigger(actions[action1])
                 print("Client does action", actions[action1])
                 state2 = states.index(conn.state)
                 print("Goes to state2", state2)
                 tmp_reward = -1
 
-                if state2 == 0: # o state 0?
+                if state2 == 0:
                     #print("Connection closed correctly")
                     tmp_reward = 1000
                 if state1 != 6 and state2 == 6: # anche state1 == 5?
@@ -221,10 +217,23 @@ class QlearningFull(object):
                 if state2 == 0:
                     done = True
 
-                #Learning the Q-value
-                self.update(state1, state2, tmp_reward, action1, Q)
+                #Choosing the next action
+                action2 = self.choose_action(state2, actions, Q)
 
-                state1 = state2
+                #Learning the Q-value
+                self.update(state1, state2, tmp_reward, action1, action2, Q)
+
+
+                act = serv.server_action(state2)
+                print("Server does action", server_actions[act])
+                conn.trigger(server_actions[act])
+
+
+                state1 = states.index(conn.state)
+                print("Goes to state1", state1)
+
+                # choose action based on the new state
+                action1 = self.choose_action(state1, actions, Q)
 
                 #Updating the respective vaLues
                 t += 1
@@ -233,6 +242,7 @@ class QlearningFull(object):
                 #If at the end of learning process
                 if done:
                     break
+
             y_timesteps.append(t-1)
             y_reward.append(reward_per_episode)
 
@@ -348,9 +358,9 @@ class QlearningFull(object):
 
 
 if __name__ == '__main__':
-    x, y_reward = QlearningFull(total_episodes=10000, disable_graphs=False).run()
+    x, y_reward = SarsaFull(total_episodes=20000, disable_graphs=False).run()
     print("End of episodes, showing graph...")
-    plt.plot(x, y_reward, label="Q-learning full")
+    plt.plot(x, y_reward, label="Sarsa full")
     plt.xlabel('Episodes')
     plt.ylabel('Final policy reward')
     plt.title('FULL: Final policy over number of episodes chosen.')
