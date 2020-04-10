@@ -210,12 +210,14 @@ class SarsaFull(object):
 
                 if state2 == 0:
                     #print("Connection closed correctly")
-                    tmp_reward = 1000
-                if state1 != 6 and state2 == 6: # anche state1 == 5?
+                    tmp_reward += 1000
+                elif state1 != 6 and state2 == 6: # anche state1 == 5?
                     #print("Connection estabilished")
-                    tmp_reward = 10
+                    tmp_reward += 10
                 if state2 == 0:
                     done = True
+                if action1 != 0:
+                    tmp_reward += -0.5
 
                 #Choosing the next action
                 action2 = self.choose_action(state2, actions, Q)
@@ -273,10 +275,12 @@ class SarsaFull(object):
                     tmp_reward = -1
                     if state2 == 0:
                         #print("Connection closed correctly")
-                        tmp_reward = 1000
-                    if state1 != 6 and state2 == 6:
+                        tmp_reward += 1000
+                    elif state1 != 6 and state2 == 6: # anche state1 == 5?
                         #print("Connection estabilished")
-                        tmp_reward = 10
+                        tmp_reward += 10
+                    if max_action != 0:
+                        tmp_reward += -0.5
                     finReward += tmp_reward
                     if self.disable_graphs == False:
                         print("New state", conn.state)
@@ -338,12 +342,14 @@ class SarsaFull(object):
             state1 = states.index(previous_state)
             state2 = states.index(conn.state)
             tmp_reward = -1
-            if state2 == 0: # o state 0?
+            if state2 == 0:
                 #print("Connection closed correctly")
-                tmp_reward = 1000
-            if state1 != 6 and state2 == 6: # anche state1 == 5?
+                tmp_reward += 1000
+            elif state1 != 6 and state2 == 6: # anche state1 == 5?
                 #print("Connection estabilished")
-                tmp_reward = 10
+                tmp_reward += 10
+            if max_action != 0:
+                tmp_reward += -0.5
             finalReward += tmp_reward
             if self.disable_graphs == False:
                 print("New state", conn.state)
