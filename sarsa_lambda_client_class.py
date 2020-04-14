@@ -217,7 +217,7 @@ class SarsaLambdaFull(object):
                 if state2 == 0:
                     #print("Connection closed correctly")
                     tmp_reward += 1000
-                elif state1 != 6 and state2 == 6: # anche state1 == 5?
+                elif state1 != 6 and state2 == 6:
                     #print("Connection estabilished")
                     tmp_reward += 10
                 if state2 == 0:
@@ -240,8 +240,11 @@ class SarsaLambdaFull(object):
                 state1 = states.index(conn.state)
                 print("Goes to state1", state1)
 
-                # choose action based on the new state
-                action1 = self.choose_action(state1, actions, Q)
+                if state1 != state2:
+                    # choose action based on the new state
+                    action1 = self.choose_action(state1, actions, Q)
+                else:
+                    action1 = action2
 
                 #Updating the respective vaLues
                 t += 1
@@ -370,9 +373,9 @@ class SarsaLambdaFull(object):
 
 
 if __name__ == '__main__':
-    x, y_reward = SarsaLambdaFull(total_episodes=20000, lam=0.7, disable_graphs=False).run()
+    x, y_reward = SarsaLambdaFull(total_episodes=10000, lam=0.2, disable_graphs=False).run()
     print("End of episodes, showing graph...")
-    plt.plot(x, y_reward, label="Sarsa full")
+    plt.plot(x, y_reward, label="Sarsa lambda full")
     plt.xlabel('Episodes')
     plt.ylabel('Final policy reward')
     plt.title('FULL: Final policy over number of episodes chosen.')
