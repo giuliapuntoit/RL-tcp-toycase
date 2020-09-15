@@ -97,7 +97,8 @@ class QlearningFull(object):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
         self.max_steps = max_steps
-        self.alpha = alpha
+        self.alpha = alphaqpalZM
+
         self.gamma = gamma
         self.disable_graphs = disable_graphs
 

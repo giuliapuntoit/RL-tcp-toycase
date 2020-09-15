@@ -364,7 +364,7 @@ class SarsaFull(object):
 
 
 if __name__ == '__main__':
-    x, y_reward = SarsaFull(total_episodes=20000, disable_graphs=False).run()
+    x, y_reward = SarsaFull(total_episodes=2000, disable_graphs=False).run()
     print("End of episodes, showing graph...")
     plt.plot(x, y_reward, label="Sarsa full")
     plt.xlabel('Episodes')
