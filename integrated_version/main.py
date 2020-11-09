@@ -32,7 +32,7 @@ n = 0
 while n < num_episodes:
     x.append(n)
     optimalPolicy, obtainedReward = SarsaSimplified(total_episodes=n, disable_graphs=dis).run()
-    if dis == False:
+    if not dis:
         if optimalPolicy:
             print("[SARSA] Optimal policy was found with reward", obtainedReward)
         else:
