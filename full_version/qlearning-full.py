@@ -60,10 +60,11 @@ import matplotlib.pyplot as plt
 
 # Defining the different parameters
 epsilon = 0.3 # small exploration, big exploitation
-total_episodes = 5000
-max_steps = 1000
-alpha = 0.005 # smaller than before
+total_episodes = 1000
+max_steps = 50
+alpha = 0.05  # smaller than before
 gamma = 0.95
+tmp = 0
 
 # Initializing the Q-matrix
 print("N states: ", len(states))
@@ -103,6 +104,7 @@ for episode in range(total_episodes):
     state1 = states.index(conn.state)
     done = False
     reward_per_episode = 0
+    tmp = 0
 
     while t < max_steps:
         #Getting the next state
@@ -115,11 +117,12 @@ for episode in range(total_episodes):
 
         if state1 == 5 and state2 == 6:
             #print("Connection closed correctly")
-            tmp_reward = 1000
+            tmp_reward = 50 + tmp
             done = True
         if state1 == 1 and state2 == 2:
             #print("Connection estabilished")
-            tmp_reward = 10
+            tmp_reward = 0
+            tmp = 100
 
         #print("Action1:", action1, ". Action2:", action2)
 

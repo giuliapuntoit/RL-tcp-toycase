@@ -15,7 +15,7 @@ from integrated_version.sarsa_simplified_class import SarsaSimplified
 from integrated_version.sarsa_lambda_simplified_class import SarsaLambdaSimplified
 import matplotlib.pyplot as plt
 
-num_episodes = 200
+num_episodes = 100
 factor = 10
 x = []
 y_sarsa_rewards = []

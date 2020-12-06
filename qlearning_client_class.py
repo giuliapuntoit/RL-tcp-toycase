@@ -1,116 +1,30 @@
+import csv
+import json
+import pathlib
 import time
 import numpy as np
+from datetime import datetime
 import random
 import matplotlib.pyplot as plt
-# from transitions import Machine
 from transitions.extensions import GraphMachine as Machine
 
-
-def start_1(p):
-    if p < 0.1:
-        return 1  # 10% send SYN
-    else:
-        return 0  # 90% do nothing x
+from server import Server
+from utilities import Connection, get_states, get_client_actions, get_server_actions, get_transitions, \
+    follow_final_policy, compute_reward
 
 
-def syn_received_3(p):
-    if p < 0.1:
-        return 0  # 10% do nothing x
-    else:
-        return 2  # 90% send ACK
-
-
-def syn_sent_4(p):
-    if p < 0.1:
-        return 0  # 10% do nothing x
-    elif p < 0.2:
-        return 1  # 10% send SYN
-    else:
-        return 3  # 80% send SYN/ACK
-
-
-def connection_established_6(p):
-    if p < 0.3:
-        return 4  # 30% send FIN
-    else:
-        return 0  # 70% do nothing x
-
-
-def last_ack_9(p):
-    if p < 0.1:
-        return 0  # 10% do nothing x
-    else:
-        return 2  # 90% send ACK
-
-
-def fin_wait_10(p):
-    if p < 0.1:
-        return 4  # 10% send FIN
-    else:
-        return 2  # 90% send ACK
-
-
-def fin_wait_received_ack_11(p):
-    if p < 0.1:
-        return 0  # 10% do nothing x
-    else:
-        return 4  # 90% send FIN
-
-
-def closing_15(p):
-    if p < 0.1:
-        return 0  # 10% do nothing x
-    else:
-        return 2  # 90% send ACK
-
-
-class Server(object):
-    # server_actions = ["x", "SYN", "ACK", "SYN/ACK", "FIN"]
-
-    def server_action(self, current_state):
-        # state 0 is closed/listen, the last one
-        # state 1 is start state
-
-        prob = np.random.uniform(0, 1)
-
-        switcher = {
-            1: start_1(prob),
-            2: 0,  # 100% do nothing x
-            3: syn_received_3(prob),
-            4: syn_sent_4(prob),
-            5: 0,  # 100% do nothing x
-            6: connection_established_6(prob),
-            7: 0,  # 100% do nothing x
-            8: 0,  # 100% do nothing x
-            9: last_ack_9(prob),
-            10: fin_wait_10(prob),
-            11: fin_wait_received_ack_11(prob),
-            12: 0,  # 100% do nothing x
-            13: 0,  # 100% do nothing x
-            14: 0,  # 100% do nothing x
-            15: closing_15(prob)
-        }
-
-        act = switcher.get(current_state)
-
-        if act is None:
-            act = -1
-
-        return act
-
-
-class Connection(object):
-    pass
-
-
-class QlearningFull(object):
-    def __init__(self, epsilon=0.3, total_episodes=5000, max_steps=1000, alpha=0.005, gamma=0.95, disable_graphs=False):
+class RLFull(object):
+    def __init__(self, algorithm="qlearning", epsilon=0.2, total_episodes=500, max_steps=100, alpha=0.05, gamma=0.9, lam=None, follow_policy=False, disable_graphs=False):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
         self.max_steps = max_steps
         self.alpha = alpha
         self.gamma = gamma
         self.disable_graphs = disable_graphs
+        self.algorithm = algorithm
+        self.follow_policy = follow_policy
+        if lam is not None:
+            self.lam = lam
 
     # Function to choose the next action
     def choose_action(self, state, actions, Qmatrix):
@@ -131,52 +45,56 @@ class QlearningFull(object):
 
     def run(self):
         conn = Connection()
+        states = get_states()
+        actions = get_client_actions()
+        server_actions = get_server_actions()
+        transitions = get_transitions(states, actions, server_actions)
 
-        states = ['closed_listen_0', 'start_1', 'closed_listen_rcvd_SYN_2', 'SYN_rcvd_3', 'SYN_sent_4',
-                  'SYN_sent_rcvd_SYN_ACK_5',
-                  'established_6', 'established_rcvd_FIN_7', 'close_wait_8', 'last_ACK_9', 'FIN_wait_10',
-                  'FIN_wait_2_rcvd_ACK_11', 'FIN_wait_rcvd_ACK_FIN_12', 'time_wait_13', 'FIN_wait_rcvd_FIN_14',
-                  'closing_15']
+        machine = Machine(model=conn, states=states, transitions=transitions, initial='start', ignore_invalid_triggers=True, auto_transitions=True, use_pygraphviz=True)
 
-        actions = ["x", "SYN", "ACK", "SYN/ACK", "FIN"]
-        server_actions = ["server_x", "server_SYN", "server_ACK", "server_SYN/ACK", "server_FIN"]
-        # actions are in the format event/response
-        transitions = [
-            # x transactions keep the state, do I have to define those triggers?
-            # client actions
-            {'trigger': actions[1], 'source': states[1], 'dest': states[4]},
-            {'trigger': actions[2], 'source': states[5], 'dest': states[6]},
-            {'trigger': actions[3], 'source': states[2], 'dest': states[3]},
-            {'trigger': actions[4], 'source': states[3], 'dest': states[10]},
-            {'trigger': actions[4], 'source': states[6], 'dest': states[10]},
-            {'trigger': actions[2], 'source': states[7], 'dest': states[8]},
-            {'trigger': actions[4], 'source': states[8], 'dest': states[9]},
-            {'trigger': actions[2], 'source': states[12], 'dest': states[13]},
-            {'trigger': actions[0], 'source': states[13], 'dest': states[0]},
-            {'trigger': actions[2], 'source': states[14], 'dest': states[15]},
-            # server actions
-            {'trigger': server_actions[1], 'source': states[1], 'dest': states[2]},
-            {'trigger': server_actions[2], 'source': states[4], 'dest': states[2]},
-            {'trigger': server_actions[3], 'source': states[4], 'dest': states[5]},
-            {'trigger': server_actions[2], 'source': states[3], 'dest': states[6]},
-            {'trigger': server_actions[4], 'source': states[6], 'dest': states[7]},
-            {'trigger': server_actions[2], 'source': states[9], 'dest': states[0]},
-            {'trigger': server_actions[2], 'source': states[10], 'dest': states[11]},
-            {'trigger': server_actions[4], 'source': states[10], 'dest': states[14]},
-            {'trigger': server_actions[4], 'source': states[11], 'dest': states[12]},
-            {'trigger': server_actions[2], 'source': states[15], 'dest': states[13]},
-            {'trigger': server_actions[0], 'source': states[13], 'dest': states[0]}
-        ]
+        # machine.get_graph().draw('client_server_diagram.png', prog='dot')
 
-        machine = Machine(model=conn, states=states, transitions=transitions, initial='start',
-                          ignore_invalid_triggers=True, auto_transitions=True, use_pygraphviz=True)
+        current_date = datetime.now()
 
-        machine.get_graph().draw('client_server_diagram.png', prog='dot')
+        log_dir = 'output/log'
+        pathlib.Path(log_dir + '/').mkdir(parents=True, exist_ok=True)  # for Python > 3.5 YY_mm_dd_HH_MM_SS'
+        log_filename = current_date.strftime(log_dir + '/' + 'log_' + '%Y_%m_%d_%H_%M_%S' + '.log')
+
+        log_date_filename = 'output/log_date.log'
+
+        output_Q_params_dir = 'output/output_Q_parameters'
+        pathlib.Path(output_Q_params_dir + '/').mkdir(parents=True, exist_ok=True)  # for Python > 3.5
+        output_Q_filename = current_date.strftime(
+            output_Q_params_dir + '/' + 'output_Q_' + '%Y_%m_%d_%H_%M_%S' + '.csv')
+        output_parameters_filename = current_date.strftime(
+            output_Q_params_dir + '/' + 'output_parameters_' + '%Y_%m_%d_%H_%M_%S' + '.csv')
+
+        output_dir = 'output/output_csv'
+        pathlib.Path(output_dir + '/').mkdir(parents=True, exist_ok=True)  # for Python > 3.5
+        output_filename = current_date.strftime(
+            output_dir + '/' + 'output_' + self.algorithm + '_' + '%Y_%m_%d_%H_%M_%S' + '.csv')
+
+        with open(log_date_filename, mode='a') as output_file:
+            output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+            output_writer.writerow([current_date.strftime('%Y_%m_%d_%H_%M_%S'), self.algorithm])
+
+        # Write parameters in output_parameters_filename
+        with open(output_parameters_filename, mode='w') as output_file:
+            output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+            output_writer.writerow(['algorithm_used', self.algorithm])
+            output_writer.writerow(['epsilon', self.epsilon])
+            output_writer.writerow(['max_steps', self.max_steps])
+            output_writer.writerow(['total_episodes', self.total_episodes])
+            output_writer.writerow(['alpha', self.alpha])
+            output_writer.writerow(['gamma', self.gamma])
+
+            if self.algorithm == 'sarsa_lambda' or self.algorithm == 'qlearning_lambda':
+                output_writer.writerow(['lambda', self.lam])
 
         # Q-learning algorithm
 
         # Initializing the Q-matrix
-        if self.disable_graphs == False:
+        if not self.disable_graphs:
             print("N states: ", len(states))
             print("N actions: ", len(actions))
         Q = np.zeros((len(states), len(actions)))
@@ -188,115 +106,120 @@ class QlearningFull(object):
         x = range(0, self.total_episodes)
         y_timesteps = []
         y_reward = []
+        y_cum_reward = []
 
         x_global = []
         y_global_reward = []
 
         serv = Server()
 
+        # Write into output_filename the header: Episodes, Reward, CumReward, Timesteps
+        with open(output_filename, mode='w') as output_file:
+            output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            output_writer.writerow(['Episodes', 'Reward', 'CumReward', 'Timesteps'])
+
+        cum_reward = 0
         # Starting Q-learning training
         for episode in range(self.total_episodes):
-            if self.disable_graphs == False:
-                print("Episode", episode)
+            print("Episode", episode)
             t = 0
             conn.state = states[1]
-            state1 = 1
+            state1 = states.index(conn.state)  # retrieve current state
+
             # first server perform an action, then client chooses
-            print("From state", 1)
+            print("\tSTARTING FROM STATE", state1)
             done = False
             reward_per_episode = 0
 
+            act = serv.server_action(state1)
+            print("\tSERVER ACTION", server_actions[act])
+            conn.trigger(server_actions[act])
+
             while t < self.max_steps:
-                act = serv.server_action(state1)
-                print("Server does action", server_actions[act])
-                conn.trigger(server_actions[act])
-
                 state1 = states.index(conn.state)  # retrieve current state
-                print("Goes to state1", state1)
-
+                print("\t\tSTATE1", state1)
                 if state1 == 0:
                     break
 
                 # Getting the next state
-
                 action1 = self.choose_action(state1, actions, Q)
                 conn.trigger(actions[action1])
-                print("Client does action", actions[action1])
+                print("\tCLIENT ACTION", actions[action1])
                 state2 = states.index(conn.state)
-                print("Goes to state2", state2)
-                tmp_reward = -1
+                print("\t\tSTATE2", state2)
 
-                if state2 == 0:  # o state 0?
-                    # print("Connection closed correctly")
-                    tmp_reward += 1000
-                elif state1 != 6 and state2 == 6:  # anche state1 == 5?
-                    # print("Connection estabilished")
-                    tmp_reward += 10
-                if state2 == 0:
-                    done = True
-                if action1 != 0:
-                    tmp_reward += -0.5
+                act = serv.server_action(state1)
+                print("\tSERVER ACTION", server_actions[act])
+                conn.trigger(server_actions[act])
+                new_state = states.index(conn.state)
+                if new_state != state2:
+                    print("\t[DEBUG]: Server changed state from ", state2, "to", new_state)
+                    state2 = new_state
+
+                tmp_reward, done = compute_reward(state1, state2, action1)
 
                 # Learning the Q-value
                 self.update(state1, state2, tmp_reward, action1, Q)
+
+                # Update log file
+                with open(log_filename, "a") as write_file:
+                    write_file.write("\nTimestep " + str(t) + " finished.")
+                    write_file.write(" Temporary reward: " + str(tmp_reward))
+                    write_file.write(" Previous state: " + str(state1))
+                    write_file.write(" Current state: " + str(state2))
+                    write_file.write(" Performed action: " + str(action1))
+                    if self.algorithm != 'qlearning':
+                        action2 = -1
+                        write_file.write(" Next action: " + str(action2))
 
                 state1 = state2
 
                 # Updating the respective vaLues
                 t += 1
                 reward_per_episode += tmp_reward
+                print("\t[DEBUG]: TMP REWARD", tmp_reward)
+                print("\t[DEBUG]: REW PER EP", reward_per_episode)
 
                 # If at the end of learning process
                 if done:
                     break
             y_timesteps.append(t - 1)
             y_reward.append(reward_per_episode)
+            cum_reward += reward_per_episode
+            y_cum_reward.append(cum_reward)
 
-            if episode % 20 == 0:
-                conn.state = states[1]
-                if self.disable_graphs == False:
-                    print("Restarting... returning to state: " + conn.state)
-                t = 0
-                finPolicy = []
-                finReward = 0
-                while t < 10:
-                    state = states.index(conn.state)
-                    print("State", state)
-                    act = serv.server_action(state)
-                    print("Server does action", server_actions[act])
-                    conn.trigger(server_actions[act])
-                    state = states.index(conn.state)
-                    print("Goes to state", state)
-                    max_action = np.argmax(Q[state, :])
-                    finPolicy.append(max_action)
-                    if self.disable_graphs == False:
-                        print("Action to perform is", actions[max_action])
-                    previous_state = conn.state
-                    conn.trigger(actions[max_action])
-                    print("End in state", conn.state)
-                    state1 = states.index(previous_state)
-                    state2 = states.index(conn.state)
-                    tmp_reward = -1
-                    if state2 == 0:  # o state 0?
-                        # print("Connection closed correctly")
-                        tmp_reward += 1000
-                    elif state1 != 6 and state2 == 6:  # anche state1 == 5?
-                        # print("Connection estabilished")
-                        tmp_reward += 10
-                    if max_action != 0:
-                        tmp_reward += -0.5
-                    finReward += tmp_reward
-                    if self.disable_graphs == False:
-                        print("New state", conn.state)
-                    if conn.state == states[0]:
-                        break
-                    t += 1
+            with open(log_filename, "a") as write_file:
+                write_file.write("\nEpisode " + str(episode) + " finished.\n")
+            with open(output_filename, mode="a") as output_file:
+                output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                output_writer.writerow([episode, reward_per_episode, cum_reward, t - 1])  # Episode or episode+1?
 
+            if self.follow_policy and episode % 20 == 0:
+                finPolicy, finReward = follow_final_policy(Q)
                 x_global.append(episode)
                 y_global_reward.append(finReward)
 
+        # Print and save the Q-matrix inside output_Q_data.csv file
+        print("Q MATRIX:")
+        print(Q)
+        header = ['Q']  # For correct output structure
+        for i in actions:
+            header.append(i)
+
+        with open(output_Q_filename, "w") as output_Q_file:
+            output_Q_writer = csv.writer(output_Q_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+            output_Q_writer.writerow(header)
+            for index, stat in enumerate(states):
+                row = [stat]
+                for val in Q[index]:
+                    row.append("%.4f" % val)
+                output_Q_writer.writerow(row)
+
+        with open(log_filename, "a") as write_file:
+            write_file.write("\nTotal time of %s seconds." % (time.time() - start_time))
+
         # Visualizing the Q-matrix
-        if self.disable_graphs == False:
+        if not self.disable_graphs:
             print(actions)
             print(Q)
 
@@ -316,50 +239,13 @@ class QlearningFull(object):
 
             plt.show()
 
-        conn.state = states[1]
-        if self.disable_graphs == False:
-            print("Restarting... returning to state: " + conn.state)
-        t = 0
-        finalPolicy = []
-        finalReward = 0
         optimal = [1, 2, 4, 2, 0]  # client actions. How can i evaluate the policy if that depends on server actions?
         optimal_path = [1, 4, 5, 6, 10, 11, 12, 13, 0]
         sub_optimal_path1 = [1, 4, 5, 6, 10, 14, 15, 13, 0]
         sub_optimal_path2 = [1, 2, 3, 6, 10, 14, 15, 13, 0]
         sub_optimal_path3 = [1, 2, 3, 6, 10, 11, 12, 13, 0]
 
-        while t < 10:
-            state = states.index(conn.state)
-            print("State", state)
-            act = serv.server_action(state)
-            print("Server does action", server_actions[act])
-            conn.trigger(server_actions[act])
-            state = states.index(conn.state)
-            print("Goes to state", state)
-            max_action = np.argmax(Q[state, :])
-            finalPolicy.append(max_action)
-            if self.disable_graphs == False:
-                print("Action to perform is", actions[max_action])
-            previous_state = conn.state
-            conn.trigger(actions[max_action])
-            print("End in state", conn.state)
-            state1 = states.index(previous_state)
-            state2 = states.index(conn.state)
-            tmp_reward = -1
-            if state2 == 0:  # o state 0?
-                # print("Connection closed correctly")
-                tmp_reward += 1000
-            elif state1 != 6 and state2 == 6:  # anche state1 == 5?
-                # print("Connection estabilished")
-                tmp_reward += 10
-            if max_action != 0:
-                tmp_reward += -0.5
-            finalReward += tmp_reward
-            if self.disable_graphs == False:
-                print("New state", conn.state)
-            if conn.state == states[0]:
-                break
-            t += 1
+        finalPolicy, finalReward = follow_final_policy(Q)
 
         print("Length final policy is", len(finalPolicy))
         print("Final policy is", finalPolicy)
@@ -368,11 +254,12 @@ class QlearningFull(object):
 
 
 if __name__ == '__main__':
-    x, y_reward = QlearningFull(total_episodes=10000, disable_graphs=False).run()
+    x_results, y_rew = RLFull(total_episodes=1000, disable_graphs=True).run()
     print("End of episodes, showing graph...")
-    plt.plot(x, y_reward, label="Q-learning full")
+    plt.plot(x_results, y_rew, label="Q-learning full")
     plt.xlabel('Episodes')
     plt.ylabel('Final policy reward')
     plt.title('FULL: Final policy over number of episodes chosen.')
     plt.legend()
     plt.show()
+    print("DONE.")
