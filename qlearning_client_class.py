@@ -148,7 +148,7 @@ class RLFull(object):
                 state2 = states.index(conn.state)
                 print("\t\tSTATE2", state2)
 
-                act = serv.server_action(state1)
+                act = serv.server_action(state2)
                 print("\tSERVER ACTION", server_actions[act])
                 conn.trigger(server_actions[act])
                 new_state = states.index(conn.state)
@@ -254,12 +254,12 @@ class RLFull(object):
 
 
 if __name__ == '__main__':
-    x_results, y_rew = RLFull(total_episodes=1000, disable_graphs=True).run()
-    print("End of episodes, showing graph...")
-    plt.plot(x_results, y_rew, label="Q-learning full")
-    plt.xlabel('Episodes')
-    plt.ylabel('Final policy reward')
-    plt.title('FULL: Final policy over number of episodes chosen.')
-    plt.legend()
-    plt.show()
+    x_results, y_rew = RLFull(total_episodes=100, disable_graphs=True).run()
+    # print("End of episodes, showing graph...")
+    # plt.plot(x_results, y_rew, label="Q-learning full")
+    # plt.xlabel('Episodes')
+    # plt.ylabel('Final policy reward')
+    # plt.title('FULL: Final policy over number of episodes chosen.')
+    # plt.legend()
+    # plt.show()
     print("DONE.")

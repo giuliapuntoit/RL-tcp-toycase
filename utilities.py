@@ -61,15 +61,20 @@ def get_transitions(states, actions, server_actions):
 def compute_reward(state1, state2, action1):
     tmp_reward = -1
     done = False
-    if state2 == 0:  # o state 0?
+    if state2 == 0 and state1 == 13:  # o state 0?
         # print("Connection closed correctly")
         tmp_reward += 100
-        done = True
+    elif state2 == 0 and state1 == 12:
+        tmp_reward += 100
+    elif state2 == 0 and state1 == 15:
+        tmp_reward += 100
     elif state1 != 6 and state2 == 6:  # anche state1 == 5?
         # print("Connection estabilished")
         tmp_reward += 10
     if action1 != 0:
         tmp_reward += -1
+    if state2 == 0:
+        done = True
     return tmp_reward, done
 
 
