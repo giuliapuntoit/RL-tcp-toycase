@@ -14,7 +14,6 @@ n_cols = 1
 
 output_dir = './'
 
-
 # Functions for plotting the moving average for multiple runs and multiple algorithms
 
 
