@@ -14,8 +14,8 @@ n_cols = 1
 
 output_dir = './'
 
-# Functions for plotting the moving average for multiple runs and multiple algorithms
 
+# Functions for plotting the moving average for multiple runs and multiple algorithms
 
 def print_cute_algo_name(a):
     if a == "sarsa":
@@ -77,7 +77,7 @@ def plot_single_algo_single_run(date_to_retrieve):
 
     plt.show()
 
-    window_size = 10
+    window_size = 20
 
     # calculate the smoothed moving average
     weights = np.repeat(1.0, window_size) / window_size
@@ -170,7 +170,7 @@ def plot_single_algo_multiple_runs(date_array, algorithm=None, path=None):
     # ["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"])
     color = ('#77FF82', '#47CC99', '#239DBA', '#006586')
 
-    window_size = 10
+    window_size = 20
 
     # calculate the smoothed moving average
     weights = np.repeat(1.0, window_size) / window_size
@@ -288,8 +288,6 @@ def plot_multiple_algo_moving_avg(algorithms_target, episodes_target, moving_ave
     if path in [1, 2, 3]:
         target_output_dir = "../plot/path" + str(path) + "/"
 
-    color = ('#77FF82', '#47CC99', '#239DBA', '#006586')
-
     for i in range(0, len(algorithms_target)):
         pl.plot(episodes_target[i][
                 np.array(episodes_target[i]).shape[0] - np.array(moving_average_rewards_target[i]).shape[0]:],
@@ -319,73 +317,6 @@ def plot_multiple_algo_moving_avg(algorithms_target, episodes_target, moving_ave
     pl.tight_layout()
     plt.savefig(target_output_dir + 'mavg_timesteps_plot.png')
     plt.show()
-
-
-def all_graphs_before_tuning():
-    algos = []
-    episodes = []
-    moving_avgs_rewards = []
-    moving_avgs_timesteps = []
-
-    sarsa = ['2020_11_05_03_27_46',
-             '2020_11_05_04_07_23',
-             '2020_11_05_04_48_59',
-             '2020_11_05_05_30_35',
-             '2020_11_05_06_10_02', ]
-
-    sarsa_lambda = [
-        '2020_11_05_06_47_59',
-        '2020_11_05_07_33_31',
-        '2020_11_05_08_04_47',
-        '2020_11_05_08_48_46',
-        '2020_11_05_09_35_46', ]
-
-    qlearning = [
-        '2020_11_05_10_24_34',
-        '2020_11_05_11_05_37',
-        '2020_11_05_11_48_23',
-        '2020_11_05_12_33_03',
-        '2020_11_05_13_16_54', ]
-
-    qlearning_lambda = [
-        '2020_11_05_13_54_50',
-        '2020_11_05_14_37_02',
-        '2020_11_05_15_10_00',
-        '2020_11_05_15_49_28',
-        '2020_11_05_16_27_15', ]
-
-    # SARSA
-    al, ep, ma, mats = plot_single_algo_multiple_runs(date_array=sarsa, algorithm="sarsa")
-
-    algos.append(al)
-    episodes.append(ep)
-    moving_avgs_rewards.append(ma)
-    moving_avgs_timesteps.append(mats)
-
-    # SARSA(lambda)
-    al, ep, ma, mats = plot_single_algo_multiple_runs(date_array=sarsa_lambda, algorithm="sarsa_lambda")
-
-    algos.append(al)
-    episodes.append(ep)
-    moving_avgs_rewards.append(ma)
-    moving_avgs_timesteps.append(mats)
-
-    # Q-learning
-    al, ep, ma, mats = plot_single_algo_multiple_runs(date_array=qlearning, algorithm="qlearning")
-
-    algos.append(al)
-    episodes.append(ep)
-    moving_avgs_rewards.append(ma)
-    moving_avgs_timesteps.append(mats)
-
-    # Q(lambda)
-    al, ep, ma, mats = plot_single_algo_multiple_runs(date_array=qlearning_lambda, algorithm="qlearning_lambda")
-    algos.append(al)
-    episodes.append(ep)
-    moving_avgs_rewards.append(ma)
-    moving_avgs_timesteps.append(mats)
-
-    plot_multiple_algo_moving_avg(algos, episodes, moving_avgs_rewards, moving_avgs_timesteps)
 
 
 def all_graphs_all_paths(sarsa, sarsa_lambda, qlearning, path=None):
@@ -453,24 +384,45 @@ if __name__ == '__main__':
     all_avg_timesteps = []
 
     print("PATH ", 0)
-    sarsa_dates = [
-        '2020_12_06_02_26_37',
-        '2020_12_06_02_26_44',
-        '2020_12_06_02_26_49',
 
+    # EPSILON 0.6 PER 200 EPISODES
+    sarsa_dates = [
+        '2020_12_06_16_51_59',
+        '2020_12_06_16_52_06',
+        '2020_12_06_16_52_14',
+        '2020_12_06_16_52_22',
+        '2020_12_06_16_52_31',
+        '2020_12_06_16_52_39',
+        '2020_12_06_16_52_47',
+        '2020_12_06_16_52_55',
+        '2020_12_06_16_53_02',
+        '2020_12_06_16_53_10',
     ]
 
     sarsa_lambda_dates = [
-        '2020_12_06_02_34_36',
-        '2020_12_06_02_34_56',
-        '2020_12_06_02_35_02',
+        '2020_12_06_16_53_18',
+        '2020_12_06_16_53_26',
+        '2020_12_06_16_53_35',
+        '2020_12_06_16_53_43',
+        '2020_12_06_16_53_55',
+        '2020_12_06_16_54_09',
+        '2020_12_06_16_54_19',
+        '2020_12_06_16_54_28',
+        '2020_12_06_16_54_40',
+        '2020_12_06_16_54_54',
     ]
 
     qlearning_dates = [
-        '2020_12_06_01_22_14',
-        '2020_12_06_01_22_19',
-        '2020_12_06_01_22_24',
-
+        '2020_12_06_16_50_38',
+        '2020_12_06_16_50_46',
+        '2020_12_06_16_50_55',
+        '2020_12_06_16_51_03',
+        '2020_12_06_16_51_11',
+        '2020_12_06_16_51_19',
+        '2020_12_06_16_51_27',
+        '2020_12_06_16_51_35',
+        '2020_12_06_16_51_43',
+        '2020_12_06_16_51_51',
     ]
 
     gar, gat = plot_single_algo_multiple_runs_for_avg_bars(sarsa_dates, all_algo[0])
@@ -486,4 +438,4 @@ if __name__ == '__main__':
     all_graphs_all_paths(sarsa_dates, sarsa_lambda_dates, qlearning_dates, path=0)
     plot_multiple_algos_rewards_timesteps(all_algo, all_avg_rew, all_avg_timesteps, 0)
 
-# 1 sarsa, 2 sarsa_lambda, 3 qlearning, 4 qlearning_lambda
+# 1 sarsa, 2 sarsa_lambda, 3 qlearning

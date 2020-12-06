@@ -14,7 +14,7 @@ from utilities import Connection, get_states, get_client_actions, get_server_act
 
 
 class SarsaLambdaFull(object):
-    def __init__(self, algorithm="sarsa_lambda", epsilon=0.2, total_episodes=500, max_steps=100, alpha=0.05, gamma=0.9, lam=0.9, follow_policy=False, disable_graphs=False):
+    def __init__(self, algorithm="sarsa_lambda", epsilon=0.6, total_episodes=500, max_steps=100, alpha=0.05, gamma=0.9, lam=0.9, follow_policy=False, disable_graphs=False):
         self.epsilon = epsilon
         self.total_episodes = total_episodes
         self.max_steps = max_steps
@@ -264,7 +264,9 @@ class SarsaLambdaFull(object):
 
 
 if __name__ == '__main__':
-    x_results, y_rew = SarsaLambdaFull(total_episodes=100, disable_graphs=True).run()
+    for i in range(10):
+        x_results, y_rew = SarsaLambdaFull(total_episodes=200, epsilon=0.6, disable_graphs=True).run()
+        time.sleep(5)
     # print("End of episodes, showing graph...")
     # plt.plot(x_results, y_rew, label="Sarsa lambda full")
     # plt.xlabel('Episodes')

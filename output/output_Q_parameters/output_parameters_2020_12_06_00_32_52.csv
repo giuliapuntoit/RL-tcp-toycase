@@ -1,6 +1,0 @@
-algorithm_used,qlearning
-epsilon,0.2
-max_steps,100
-total_episodes,1000
-alpha,0.05
-gamma,0.9

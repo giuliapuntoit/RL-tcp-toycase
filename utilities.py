@@ -63,11 +63,11 @@ def compute_reward(state1, state2, action1):
     done = False
     if state2 == 0 and state1 == 13:  # o state 0?
         # print("Connection closed correctly")
-        tmp_reward += 100
+        tmp_reward += 200
     elif state2 == 0 and state1 == 12:
-        tmp_reward += 100
+        tmp_reward += 200
     elif state2 == 0 and state1 == 15:
-        tmp_reward += 100
+        tmp_reward += 200
     elif state1 != 6 and state2 == 6:  # anche state1 == 5?
         # print("Connection estabilished")
         tmp_reward += 10

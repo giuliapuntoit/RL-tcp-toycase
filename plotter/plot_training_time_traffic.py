@@ -7,25 +7,19 @@ matplotlib.pyplot.rcParams["font.family"] = "Times New Roman"
 matplotlib.pyplot.rcParams['font.size'] = 20
 
 
-# matplotlib.pyplot.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-
-
 class PlotTrainingTimeTraffic(object):
     # Plot the training measures: training time and traffic generated during the learning process
     def __init__(self):
         pass
 
-    def run(self, path=None):
-        times = [[], [], [], []]
-        traffic = [[], [], [], []]
+    def run(self, path=0):
+        times = [[], [], []]
+        traffic = [[], [], []]
 
+        starter = "path" + str(path)
         output_dir = "./"
-        starter = "0"
-        if path in [1, 2, 3]:
-            starter = "path" + str(path)
-            output_dir = "../plot/path" + str(path) + "/"
 
-        file_algo = ["sarsa", "sarsa_lambda", "qlearning", "qlearning_lambda"]
+        file_algo = ["sarsa", "sarsa_lambda", "qlearning"]
 
         for index, fa in enumerate(file_algo):
             with open(starter + "_" + fa + ".csv", 'r') as csv_file:
@@ -35,17 +29,15 @@ class PlotTrainingTimeTraffic(object):
                     times[index].append(float(row[1]))
                     traffic[index].append(int(row[2]))
 
-        avg_times = [np.mean(times[0]), np.mean(times[1]), np.mean(times[2]),
-                     np.mean(times[3])]
-        std_dev_times = [np.std(times[0]), np.std(times[1]), np.std(times[2]),
-                         np.std(times[3])]
+        avg_times = [np.mean(times[0]), np.mean(times[1]), np.mean(times[2])]
+        std_dev_times = [np.std(times[0]), np.std(times[1]), np.std(times[2])]
         fig, ax = matplotlib.pyplot.subplots()
         # col = ax.bar(["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"], avg_times, align='center',
         #              yerr=std_dev_times)
 
-        col = ax.boxplot(times)  # , ["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"])
+        col = ax.boxplot(times)
 
-        ax.set_xticklabels(["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"])
+        ax.set_xticklabels(["SARSA", "SARSA(λ)", "Q-learning"])
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
         ax.set_ylabel('Time (s)')
@@ -58,19 +50,17 @@ class PlotTrainingTimeTraffic(object):
         matplotlib.pyplot.savefig(output_dir + 'training_times.png')
         matplotlib.pyplot.show()
 
-        avg_traffic = [np.mean(traffic[0]), np.mean(traffic[1]), np.mean(traffic[2]),
-                       np.mean(traffic[3])]
-        std_dev_traffic = [np.std(traffic[0]), np.std(traffic[1]), np.std(traffic[2]),
-                           np.std(traffic[3])]
+        avg_traffic = [np.mean(traffic[0]), np.mean(traffic[1]), np.mean(traffic[2])]
+        std_dev_traffic = [np.std(traffic[0]), np.std(traffic[1]), np.std(traffic[2])]
         fig, ax = matplotlib.pyplot.subplots()
         # COLUMN BAR GRAPH
         # col = ax.bar(["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"], avg_traffic, align='center',
         #              yerr=std_dev_traffic)  # color=('#77FF82', '#47CC99', '#239DBA', '#006586'))
 
         # BOXPLOT GRAPH
-        col = ax.boxplot(traffic)  # , ["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"])
+        col = ax.boxplot(traffic)
 
-        ax.set_xticklabels(["SARSA", "SARSA(λ)", "Q-learning", "Q(λ)"])
+        ax.set_xticklabels(["SARSA", "SARSA(λ)", "Q-learning"])
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
         ax.set_ylabel('Number of commands sent')
@@ -91,11 +81,5 @@ if __name__ == '__main__':
     # date | 123           |           150
     # As input file I need only the log file
     PlotTrainingTimeTraffic().run()
-
-    PlotTrainingTimeTraffic().run(path=1)
-
-    PlotTrainingTimeTraffic().run(path=2)
-
-    PlotTrainingTimeTraffic().run(path=3)
 
 # 1 sarsa, 2 sarsa_lambda, 3 qlearning, 4 qlearning_lambda
