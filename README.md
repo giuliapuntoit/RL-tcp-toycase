@@ -35,12 +35,12 @@ General structure of directories:
 
 All these directories model the scenario in the following figure, with no distinction between a TCP client and a TCP server:
 
-<p align="center"><img src="https://github.com/giuliapuntoit/RL-tcp-toycase/blob/master/images/tcp.png" height="800"></p>
+<p align="center"><img src="https://github.com/giuliapuntoit/RL-tcp-toycase/blob/master/images/tcpSchemaStandard.png" height="800"></p>
 
 
 ``*_client_class.py`` files contains RL for the client considered as a RL agent, with a probabilistic server as modelled in this image:
 
-<p align="center"><img src="https://github.com/giuliapuntoit/RL-tcp-toycase/blob/master/images/tcp.png" height="800"></p>
+<p align="center"><img src="https://github.com/giuliapuntoit/RL-tcp-toycase/blob/master/images/tcpSchemaProbabilistic.png" height="800"></p>
 
 These classes rely on:
 
