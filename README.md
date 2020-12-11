@@ -69,7 +69,7 @@ It first has aninitialization phase, then it performs an outer loop over the num
 For efficiency purposes, a maximum number of time steps is set so that if the terminalstate is not reached the episode still finishes. Inside the inner loop the core of each algorithm is implemented. At the end of the outer loop, the learning process is finished and the best policy found can be evaluated.
 
 1. The initialization procedure is analogous to all algorithms: a Q matrix has beeninitialized to 0, with rows equal to the number of states and columns equal to the number of available actions. This means that for the TCP scenario the Q matrix is 16×5. For the SARSA(λ) algorithm, the E matrix, with same dimensions as Q ,has been initialized to 0.
-2. Then, for each algorithm we select actions following the-greedy policy. All algorithms use the same function which first generates a random real number n ∈ [0,1]. If n < a random action is chosen, otherwise the action with the highestvalue inside the Q matrix for the current states is selected. 
+2. Then, for each algorithm we select actions following the ε-greedy policy. All algorithms use the same function which first generates a random real number n ∈ [0,1]. If n < ε a random action is chosen, otherwise the action with the highestvalue inside the Q matrix for the current states is selected. 
 3. Inside the core of the program, all algorithms deals with the updates of the Q matrix - and of the E matrix for the SARSA(λ) algorithm - in different ways. For this reason, each algorithm has a specific update function, which updates both the Q matrix and, if necessary, the E matrix.
 4. Moreover, at each time stepta reward is given to the algorithm together with the information of the current state in which the RL agent is.
 5. Finally, after the learning process, the computed Q value function is evaluatedin the same way for all algorithms: starting from the initial state, the best policy suggested by the Q matrix is followed and the final reward is computed
@@ -78,7 +78,7 @@ More information can be found in my master's degree thesis.
 
 ## Tests
 
-No tests present for now.
+No tests present.
 
 
 ## Contribute
